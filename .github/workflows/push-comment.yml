@@ -20,16 +20,19 @@ jobs:
       - name: Generate summary
         id: summary
         run: |
+          COMMIT_SHA=${{ github.event.pull_request.head.sha }}
+      
+          git fetch origin $COMMIT_SHA
+      
           echo "BODY<<EOF" >> $GITHUB_OUTPUT
           echo "<details>" >> $GITHUB_OUTPUT
           echo "<summary>📦 Push Summary</summary>" >> $GITHUB_OUTPUT
           echo "" >> $GITHUB_OUTPUT
-          echo "**PR:** #${{ github.event.pull_request.number }}" >> $GITHUB_OUTPUT
+          echo "**Commit:** $COMMIT_SHA" >> $GITHUB_OUTPUT
           echo "**Actor:** ${{ github.actor }}" >> $GITHUB_OUTPUT
-          echo "**Branch:** ${{ github.head_ref }}" >> $GITHUB_OUTPUT
           echo "" >> $GITHUB_OUTPUT
           echo "### Latest Commit Message" >> $GITHUB_OUTPUT
-          git log -1 --pretty=%B >> $GITHUB_OUTPUT
+          git log -1 --pretty=%B $COMMIT_SHA >> $GITHUB_OUTPUT
           echo "" >> $GITHUB_OUTPUT
           echo "</details>" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
