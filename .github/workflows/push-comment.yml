@@ -1,21 +1,46 @@
-name: command
-on: [push]
+name: Push Comment
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
 jobs:
-  command:
-    name: Use Linux commands
-    runs-on: ubuntu-20.04
+  comment:
+    runs-on: ubuntu-latest
+
     steps:
-      - name: Show ubuntu details
-        run: lsb_release -a
-      - name: Inspect files before checkout
-        run: ls -la
-      - name: show current directory before checkout
-        run: pwd
       - name: Checkout
-        uses: actions/checkout@v5
-      - name: Inspect files after checkout
-        run: ls -la
-      - name: show current directory after checkout
-        run: pwd
-      - name: show all branches after checkout
-        run: git branch -a
+        uses: actions/checkout@v4
+
+      - name: Generate comment
+        id: gen
+        run: |
+          {
+            echo 'BODY<<EOF'
+            echo '<details>'
+            echo '<summary>📦 Push Summary</summary>'
+            echo
+            echo "Commit: $GITHUB_SHA"
+            echo "Author: $GITHUB_ACTOR"
+            echo
+            echo '### Changes'
+            git log -1 --pretty=%B
+            echo
+            echo '</details>'
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Post commit comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.repos.createCommitComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              commit_sha: context.sha,
+              body: `${{ steps.gen.outputs.BODY }}`
+            })
