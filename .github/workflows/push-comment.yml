@@ -1,41 +1,21 @@
-name: Push Comment
-
-on:
-  push:
-    branches:
-      - main
-
+name: command
+on: [push]
 jobs:
-  comment:
-    runs-on: ubuntu-latest
-
+  command:
+    name: Use Linux commands
+    runs-on: ubuntu-20.04
     steps:
+      - name: Show ubuntu details
+        run: lsb_release -a
+      - name: Inspect files before checkout
+        run: ls -la
+      - name: show current directory before checkout
+        run: pwd
       - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Generate comment
-        id: gen
-        run: |
-          echo "BODY<<EOF" >> $GITHUB_OUTPUT
-          echo "<details>" >> $GITHUB_OUTPUT
-          echo "<summary>📦 Push Summary</summary>" >> $GITHUB_OUTPUT
-          echo "" >> $GITHUB_OUTPUT
-          echo "Commit: $GITHUB_SHA" >> $GITHUB_OUTPUT
-          echo "Author: $GITHUB_ACTOR" >> $GITHUB_OUTPUT
-          echo "" >> $GITHUB_OUTPUT
-          echo "### Changes" >> $GITHUB_OUTPUT
-          git log -1 --pretty=%B >> $GITHUB_OUTPUT
-          echo "" >> $GITHUB_OUTPUT
-          echo "</details>" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-
-      - name: Post comment
-        uses: actions/github-script@v7
-        with:
-          script: |
-            github.rest.repos.createCommitComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              commit_sha: context.sha,
-              body: `${{ steps.gen.outputs.BODY }}`
-            })
+        uses: actions/checkout@v5
+      - name: Inspect files after checkout
+        run: ls -la
+      - name: show current directory after checkout
+        run: pwd
+      - name: show all branches after checkout
+        run: git branch -a
